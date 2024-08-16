@@ -17,21 +17,15 @@
 #include<skiOS/drivers/video.h>
 #include<skiOS/shell.h>
 
-// Set Limine Base Revision to 2 - Recommended as It's The Latest Base Revision Described by The Limine Boot Protocol Specs
+// Set Limine Base Revision to The Latest Base Revision Described by The Limine Boot Protocol Specs
 __attribute__((used, section(".requests")))
 static volatile LIMINE_BASE_REVISION(2)
 
-// Define The Start and End Markers For Limine Requests - Can be Moved Anywhere, To Any '.c' File as Seen Fit
+// Start And End Markers For Limine Requests
 __attribute__((used, section(".requests_start_marker")))
 static volatile LIMINE_REQUESTS_START_MARKER
 __attribute__((used, section(".requests_end_marker")))
 static volatile LIMINE_REQUESTS_END_MARKER
-
-// Glyph/Font Dimensions
-uint64_t glyphWidth = 8, glyphHeight = 16;
-
-// Bitmap Start Address
-extern uint64_t _bitmap_start;
 
 // Disable System Interrupts and Halt System
 static void halt(void) {
@@ -42,10 +36,11 @@ static void halt(void) {
 // Kernel Entry Point
 void kmain(void) {
     // Ensure That The Bootloader Supports Our Base Revision and That we Have A Framebuffer
-    if(LIMINE_BASE_REVISION_SUPPORTED == false) halt();
+    if(!LIMINE_BASE_REVISION_SUPPORTED) halt();
 
     // Fetch The First Framebuffer and Initialize The Video Driver
-    initVideo(glyphWidth, glyphHeight);
+    uint64_t fontWidth = 8, fontHeight = 16;
+    initVideo(fontWidth, fontHeight);
     setBgColor(rgbToHex(30, 30, 46));
     setFgColor(rgbToHex(205, 214, 244));
     resetScreen();
