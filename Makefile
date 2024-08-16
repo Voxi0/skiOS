@@ -1,4 +1,4 @@
-# Compiler and linker options
+# Compiler and Linker Options
 CC := x86_64-elf-gcc
 LD := x86_64-elf-ld
 CFLAGS := -I include/ \
@@ -15,7 +15,7 @@ OBJ_DIR := build
 ISO_DIR := $(OBJ_DIR)/isodir
 BOOT_DIR := $(ISO_DIR)/boot
 EFI_BOOT_DIR := $(ISO_DIR)/EFI/BOOT
-OBJ_FILES := $(OBJ_DIR)/asm.o $(OBJ_DIR)/util.o $(OBJ_DIR)/io.o $(OBJ_DIR)/gdt.o $(OBJ_DIR)/idt.o $(OBJ_DIR)/kernel.o $(OBJ_DIR)/pmm.o $(OBJ_DIR)/vmm.o $(OBJ_DIR)/pic.o $(OBJ_DIR)/video.o $(OBJ_DIR)/keyboard.o $(OBJ_DIR)/shell.o $(OBJ_DIR)/printf.o $(OBJ_DIR)/unifont.o
+OBJ_FILES := $(addprefix $(OBJ_DIR)/, asm.o util.o io.o gdt.o idt.o kernel.o pmm.o vmm.o pic.o video.o keyboard.o shell.o printf.o unifont.o)
 
 # Phony Targets and Default Target
 .PHONY: all run clean
