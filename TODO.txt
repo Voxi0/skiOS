@@ -1,4 +1,0 @@
-- Implement a VMM (Virtual Memory Manager)
-- Implement a filesystem driver or multiple filesystem drivers
-- Implement a LibC.
-- Port some applications (neofetch, doom etc.)

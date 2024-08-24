@@ -1,63 +1,52 @@
-// Freestanding Headers
-#include<stdint.h>
+// Freestanding headers
 #include<stddef.h>
+#include<stdint.h>
 #include<stdbool.h>
 
 // Limine
 #include<limine/limine.h>
 
 // skiOS
-#include<skiOS/util.h>
-
 #include<skiOS/cpu/gdt.h>
 #include<skiOS/cpu/idt.h>
-
-#include<skiOS/memory/pmm.h>
 
 #include<skiOS/drivers/video.h>
 #include<skiOS/shell.h>
 
-// Set Limine Base Revision to The Latest Base Revision Described by The Limine Boot Protocol Specs
+// Set limine base revision version number to the latest as specified in the specs
 __attribute__((used, section(".requests")))
 static volatile LIMINE_BASE_REVISION(2)
 
-// Start And End Markers For Limine Requests
+// Mark the start and end markers for limine requests
 __attribute__((used, section(".requests_start_marker")))
 static volatile LIMINE_REQUESTS_START_MARKER
 __attribute__((used, section(".requests_end_marker")))
 static volatile LIMINE_REQUESTS_END_MARKER
 
-// Disable System Interrupts and Halt System
+// Disable system interrupts and halt system
 static void halt(void) {
     asm("cli");
     for(;;) asm("hlt");
 }
 
-// Kernel Entry Point
+// Kernel main function
 void kmain(void) {
-    // Ensure That The Bootloader Supports Our Base Revision and That we Have A Framebuffer
-    if(!LIMINE_BASE_REVISION_SUPPORTED) halt();
+    // Ensure that the set base revision version is supported
+    if(LIMINE_BASE_REVISION_SUPPORTED != true) halt();
 
-    // Fetch The First Framebuffer and Initialize The Video Driver
-    uint64_t fontWidth = 8, fontHeight = 16;
-    initVideo(fontWidth, fontHeight);
+    // Initialize basic things
+    initGDT();
+    initIDT();
+
+    // Initialize the video driver
+    initVideo(8, 16);
     setBgColor(rgbToHex(30, 30, 46));
     setFgColor(rgbToHex(205, 214, 244));
     resetScreen();
 
-    // Initialize The GDT and IDT
-    initGDT();
-    printf("Initialized The GDT\n");
-    initIDT();
-    printf("Initialized The IDT\n");
+    // Initialize the shell
+    initShell();
 
-    // Initialize The PMM (Physical Memory Manager)
-    initPMM();
-    printf("Initialized The Physical Memory Manager (PMM)\n");
-
-    // Initialize The Shell and Register More Commands
-    shellInit();
-
-    // Main Loop
+    // Infinite loop
     while(1);
 }

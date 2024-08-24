@@ -1,7 +1,7 @@
 #ifndef KEYMAP_H
 #define KEYMAP_H
 
-// ASCII Mapping - Lowercase
+// ASCII mapping - Lowercase
 static const char asciiMapLower[128] = {
     0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
     '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
@@ -10,7 +10,7 @@ static const char asciiMapLower[128] = {
     0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-// ASCII Mapping - Uppercase
+// ASCII mapping - Uppercase
 static const char asciiMapUpper[128] = {
     0, 27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b',
     '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n',

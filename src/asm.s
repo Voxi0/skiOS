@@ -1,15 +1,14 @@
-; NASM Directives
 [BITS 64]
-[extern isrHandler]
+[extern interruptHandler]
 
-; Macros to Create ISRs
+; Macros to create ISRs
 %macro isrErrStub 1
     isr%+%1:
         push rdi
         push rsi
         mov rdi, %1
         mov rsi, [rsp+16]
-        call isrHandler
+        call interruptHandler
         pop rsi
         pop rdi
         iretq
@@ -19,10 +18,12 @@
         push rdi
         xor rsi, rsi
         mov rdi, %1
-        call isrHandler
+        call interruptHandler
         pop rdi
         iretq
 %endmacro
+
+; Create all the 32 CPU exceptions ISRs
 %macro createExceptions 0
     %assign i 0
     %rep 32
@@ -34,6 +35,8 @@
         %assign i i+1
     %endrep
 %endmacro
+
+; Create the 16 IRQs (Hardware interrupts)
 %macro createIRQs 0
     %assign i 32
     %rep 16
@@ -42,51 +45,50 @@
     %endrep
 %endmacro
 
-; Code Section
+; Code section
 section .text
-    ; Create All The ISRs
+    ; Create all the ISRs
     createExceptions
     createIRQs
-    
-    ; Utility Functions
-    ; Function to Load The GDT
+
+    ; Helper functions
+    ; Load the GDT
     global loadGDT
     loadGDT:
         ; Load the GDT
         lgdt [rdi]
 
-        ; Reload Segment Registers
-        mov ax, 0x10          ; Kernel data segment selector (index 2 in GDT)
+        ; Reload code segment register
+        push 0x08               ; Kernel code segment selector (Index 1 in the GDT)
+        lea rax, [rel .next]    ; Load memory address of .next into the RAX register
+        push rax                ; Push this value to the stack
+        retfq                   ; Far return to update CS
+    .next:
+        ; Reload data segment registers
+        mov ax, 0x10          ; Kernel data segment selector (Index 2 in the GDT)
         mov ds, ax
         mov es, ax
         mov fs, ax
         mov gs, ax
         mov ss, ax
-
-        ; Update Code Segment
-        push 0x08             ; Kernel code segment selector (index 1 in GDT)
-        lea rax, [next]
-        push rax
-        retfq                 ; Far return to update CS
-    next:
         ret
 
-    ; Function to Load The IDT and an ISR Stub Table Which is Used to Prevent Excessive Code Reuse
+    ; Load the IDT and an ISR stub table to prevent excessive code reuse
     global loadIDT, isrStubTable
     loadIDT:
-        ; Load The IDT and Enable Interrupts
+        ; Load the IDT and enable system interrupts
         lidt [rdi]
         sti
         ret
     isrStubTable:
-        ; 32 ISRs
+        ; 32 CPU exceptions ISRs
         %assign i 0
         %rep 32
             dq isr%+i
             %assign i i+1
         %endrep
 
-        ; 16 IRQs
+        ; 16 IRQs (Hardware interrupts)
         %rep 16
             dq isr%+i
             %assign i i+1

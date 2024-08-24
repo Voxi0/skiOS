@@ -1,9 +1,7 @@
 #include<skiOS/util.h>
 
 // GCC and Clang Reserves The Right to Generate Calls to The Following 4 Functions Even if They Aren't Directly Called
-// Must be Implemented as The C Specs Mandates
 // DO NOT REMOVE OR RENAME THESE FUNCTIONS OR STUFF WILL EVENTUALLY BREAK!
-// The CAN be Moved to A Different '.c' File
 void *memcpy(void *dst, const void *src, size_t n) {
     uint8_t *ptrDst = (uint8_t*)dst;
     const uint8_t *ptrSrc = (const uint8_t*)src;
@@ -34,11 +32,14 @@ int memcmp(const void *s1, const void *s2, size_t n) {
     return 0;
 }
 
-// Extra
+// Get the minimum/maximum value of two values
 int min(int a, int b) {return a < b ? a : b;}
 int max(int a, int b) {return a > b ? a : b;}
+
+// Clamp a value to the minimum and maximum value
 int clamp(int value, int minValue, int maxValue) {return min(max(value, minValue), maxValue);}
 
+// String functions
 int stringToInt(const char *str) {
     int result = 0;
     while(*str >= '0' && *str <= '9') {
@@ -62,21 +63,21 @@ int strcmp(const char *str1, const char *str2) {
 int strncmp(const char *str1, const char *str2, size_t n) {
     size_t i = 0;
     while(i < n) {
-        if (str1[i] != str2[i]) return (unsigned char)str1[i] - (unsigned char)str2[i];
-        if (str1[i] == '\0' || str2[i] == '\0') break;
+        if(str1[i] != str2[i]) return (unsigned char)str1[i] - (unsigned char)str2[i];
+        if(str1[i] == '\0' || str2[i] == '\0') break;
         i++;
     }
     return 0;
 }
-char *strcpy(char *dest, const char *src) {
-    char *d = dest;
+char *strcpy(char *dst, const char *src) {
+    char *d = dst;
     while((*d++ = *src++) != '\0');
-    return dest;
+    return dst;
 }
-char *strncpy(char *dest, const char *src, int n) {
-    char *d = dest;
+char *strncpy(char *dst, const char *src, int n) {
+    char *d = dst;
     while(n-- > 0 && (*d++ = *src++) != '\0');
-    return dest;
+    return dst;
 }
 char *strchr(const char *str, int c) {
     while(*str != '\0') {
@@ -85,9 +86,9 @@ char *strchr(const char *str, int c) {
     }
     return NULL;
 }
-char *strcat(char *dest, const char *src) {
-    char *d = dest;
-    while (*d) d++;
-    while ((*d++ = *src++));
-    return dest;
+char *strcat(char *dst, const char *src) {
+    char *d = dst;
+    while(*d) d++;
+    while((*d++ = *src++));
+    return dst;
 }
