@@ -1,7 +1,7 @@
 # skiOS
 skiOS is a x86 64-Bit hobby OS written in C.
 
-## Dependencies
+## How to build
 Ensure that you have x86 64-Bit GCC and LD installed on your system along with QEMU for emulating the OS itself and of course, make to build the
 project. Once you have everything, just 'cd' into the project directory and run make to build and emulate skiOS.
 
