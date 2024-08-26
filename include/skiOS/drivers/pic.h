@@ -1,5 +1,4 @@
-#ifndef PIC_H
-#define PIC_H
+#pragma once
 
 // Freestanding headers
 #include<stdint.h>
@@ -8,12 +7,10 @@
 #include<skiOS/cpu/io.h>
 
 // PIC functions
-void picRemap(uint8_t offset1, uint8_t offset2);
-void picMask(uint8_t irq);
-void picUnmask(uint8_t irq);
+void picRemap(int offset1, int offset2);
+void picMask(uint8_t irqNum);
+void picUnmask(uint8_t irqNum);
 uint16_t picGetIRR(void);
 uint16_t picGetISR(void);
-void picSendEndOfInterrupt(uint8_t irq);
+void picSendEOI(uint8_t irqNum);
 void picDisable(void);
-
-#endif

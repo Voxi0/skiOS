@@ -1,41 +1,36 @@
-#ifndef VIDEO_H
-#define VIDEO_H
+#pragma once
 
 // Freestanding headers
+#include<stddef.h>
 #include<stdint.h>
 
 // Limine
 #include<limine/limine.h>
 
-// Tiny Printf
+// Tiny printf
 #include<printf.h>
 
 // skiOS
-#include<skiOS/memory/buddy.h>
-#include<skiOS/util.h>
 #include<skiOS/shell.h>
 
 // Definitions
 #define TAB_SPACES 4
 
 // Video functions
-void initVideo(uint8_t glyphWidth, uint8_t glyphHeight);
+// General
+void initVideo(struct limine_framebuffer *framebuffer, const uint8_t fontWidth, const uint8_t fontHeight);
 void resetScreen(void);
-
-// Convert RGB to hex color code
 uint32_t rgbToHex(int r, int g, int b);
 
 // Getters
-int getFontWidth(void);
-int getFontHeight(void);
-int getCursorPosX(void);
-int getCursorPosY(void);
+uint8_t getFontWidth(void);
+uint8_t getFontHeight(void);
+size_t getCursorX(void);
+size_t getCursorY(void);
 
 // Setters
-void setFgColor(uint32_t color);
 void setBgColor(uint32_t color);
+void setFgColor(uint32_t color);
 
 // Draw shapes
-void drawRect(uint64_t x, uint64_t y, int width, int height, uint32_t color);
-
-#endif
+void drawRect(uint64_t x, uint64_t y, uint64_t width, uint64_t height, uint32_t color);

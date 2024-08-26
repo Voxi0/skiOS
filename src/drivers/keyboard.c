@@ -30,14 +30,15 @@ typedef enum {
 // Keyboard state
 static bool shiftOn = false, capsLock = false;
 
-// Registered key callback handler
+// Key callback
 static KeyCallback keyCallback = NULL;
 
 // Keyboard IRQ handler
-static void kbHandler(uint64_t irqNum) {
+static void kbHandler(uint8_t irqNum) {
+    // Get keyboard data from data port
     uint8_t scancodeRaw = inb(KB_PORT_DATA);
-    uint8_t scancode = scancodeRaw & ~KB_SCANCODE_RELEASE_MASK;
-    bool pressed = !(scancodeRaw & KB_SCANCODE_RELEASE_MASK);     // Key pressed (1) or released (0)
+    uint8_t scancode = scancodeRaw & ~KB_SCANCODE_RELEASE_MASK;     // What key is pressed
+    bool pressed = !(scancodeRaw & KB_SCANCODE_RELEASE_MASK);       // Key pressed (1) or released (0)
 
     // Process scancode
     char key = 0;
@@ -47,23 +48,23 @@ static void kbHandler(uint64_t irqNum) {
         case KB_SCANCODE_RIGHT_SHIFT:
             shiftOn = pressed;
             break;
-
+        
         // Caps lock
         case KB_SCANCODE_CAPS_LOCK:
             if(pressed) capsLock = !capsLock;
             break;
-
+        
         // Backspace
         case KB_SCANCODE_BACKSPACE:
             key = '\b';
             break;
         
-        // Enter key
+        // Enter
         case KB_SCANCODE_ENTER:
             key = '\n';
             break;
-
-        // Normal scancode
+        
+        // Normal - Translate scancode to ASCII
         default:
             if(pressed && scancode < sizeof(asciiMapLower)) {
                 // Translate scancode to ASCII
@@ -72,18 +73,18 @@ static void kbHandler(uint64_t irqNum) {
             break;
     }
 
-    // Call the registered key callback function if available                                                                              
+    // Call the key callback function if it's registered
     if(keyCallback != NULL && key != 0) keyCallback(key, pressed);
 
-    // Send End-Of-Interrupt (EOI) signal to the PICs
-    picSendEndOfInterrupt(irqNum);
+    // Send End of Interrupt (EOI) signal to the PICs
+    picSendEOI(irqNum);
 }
 
-// Initialize/Deinitialize the keyboard driver
+// Enable/Disable the keyboard
 void initKb(void) {
-    // Unmask (Enable) keyboard IRQ and register a handler for it
-    picUnmask(1);
+    // Register a keyboard handler and unmask (Enable) keyboard interrupts
     irqRegisterHandler(1, &kbHandler);
+    picUnmask(1);
 
     // Clear keyboard data register
     while(inb(KB_PORT_STATUS) & 0x1) inb(KB_PORT_DATA);
@@ -92,17 +93,11 @@ void initKb(void) {
     outb(KB_PORT_DATA, KB_CMD_ENABLE_SCANNING);
 }
 void disableKb(void) {
-    // Mask (Disable) keyboard IRQ and deregister it's handler
-    picMask(1);
+    // Deregister the keyboard handler and mask (Disable) keyboard interrupts
     irqDeregisterHandler(1);
+    picMask(1);
 }
 
-// Send a command byte to the keyboard
-void kbSendCmd(uint8_t cmdByte) {
-    // Wait until the keyboard is ready
-    while(inb(KB_PORT_COMMAND) & 0x2) outb(KB_PORT_DATA, cmdByte);
-}
-
-// Register/Unregister the key callback handler
-void kbRegisterKeyCallback(KeyCallback callback) {keyCallback = callback;}
-void kbUnregisterKeyCallback(void) {keyCallback = NULL;}
+// Register/Deregister key callback handler
+void kbRegisterKeyCallback(KeyCallback handler) {keyCallback = handler;}
+void kbDeregisterKeyCallback(void) {keyCallback = NULL;}

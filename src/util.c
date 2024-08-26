@@ -1,6 +1,7 @@
 #include<skiOS/util.h>
 
 // GCC and Clang Reserves The Right to Generate Calls to The Following 4 Functions Even if They Aren't Directly Called
+// Implement these as the C specs mandates
 // DO NOT REMOVE OR RENAME THESE FUNCTIONS OR STUFF WILL EVENTUALLY BREAK!
 void *memcpy(void *dst, const void *src, size_t n) {
     uint8_t *ptrDst = (uint8_t*)dst;
@@ -92,3 +93,4 @@ char *strcat(char *dst, const char *src) {
     while((*d++ = *src++));
     return dst;
 }
+int tolower(int c) {return c | 32;}

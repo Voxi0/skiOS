@@ -1,5 +1,4 @@
-#ifndef KEYMAP_H
-#define KEYMAP_H
+#pragma once
 
 // ASCII mapping - Lowercase
 static const char asciiMapLower[128] = {
@@ -18,5 +17,3 @@ static const char asciiMapUpper[128] = {
     '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0, '*',
     0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
-
-#endif

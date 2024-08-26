@@ -1,11 +1,13 @@
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 
 // Freestanding headers
 #include<stddef.h>
 #include<stdint.h>
 
+#include<skiOS/util.h>
+
 // GCC and Clang Reserves The Right to Generate Calls to The Following 4 Functions Even if They Aren't Directly Called
+// Implement these as the C specs mandates
 // DO NOT REMOVE OR RENAME THESE FUNCTIONS OR STUFF WILL EVENTUALLY BREAK!
 void *memcpy(void *dst, const void *src, size_t n);
 void *memset(void *s, int c, size_t n);
@@ -28,5 +30,4 @@ char *strcpy(char *dst, const char *src);
 char *strncpy(char *dst, const char *src, int n);
 char *strchr(const char *str, int c);
 char *strcat(char *dst, const char *src);
-
-#endif
+int tolower(int c);

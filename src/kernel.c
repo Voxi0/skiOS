@@ -7,17 +7,30 @@
 #include<limine/limine.h>
 
 // skiOS
+// Some useful C functions
+#include<skiOS/util.h>
+
+// CPU
 #include<skiOS/cpu/gdt.h>
 #include<skiOS/cpu/idt.h>
 
+// Drivers
 #include<skiOS/drivers/video.h>
+
+// Shell
 #include<skiOS/shell.h>
 
-// Set limine base revision version number to the latest as specified in the specs
+// Set the base revision to the latest version as specified in the Limine boot protocol specs
 __attribute__((used, section(".requests")))
 static volatile LIMINE_BASE_REVISION(2)
 
-// Mark the start and end markers for limine requests
+// Limine requests
+__attribute__((used, section(".requests")))
+static volatile struct limine_framebuffer_request fbRequest = {
+	.id = LIMINE_FRAMEBUFFER_REQUEST,
+};
+
+// Define the start and end markers for Limine requests
 __attribute__((used, section(".requests_start_marker")))
 static volatile LIMINE_REQUESTS_START_MARKER
 __attribute__((used, section(".requests_end_marker")))
@@ -25,28 +38,49 @@ static volatile LIMINE_REQUESTS_END_MARKER
 
 // Disable system interrupts and halt system
 static void halt(void) {
-    asm("cli");
-    for(;;) asm("hlt");
+	__asm__("cli");
+	for(;;) __asm__("hlt");
 }
 
-// Kernel main function
+// Main kernel function
 void kmain(void) {
-    // Ensure that the set base revision version is supported
-    if(LIMINE_BASE_REVISION_SUPPORTED != true) halt();
+	// Ensure that the base revision is supported
+	if(LIMINE_BASE_REVISION_SUPPORTED == false) halt();
 
-    // Initialize basic things
-    initGDT();
-    initIDT();
+	// Initialize the Global Descriptor Table (GDT) and Interrupt Descriptor Table (IDT)
+	initGDT();
+	initIDT();
 
-    // Initialize the video driver
-    initVideo(8, 16);
-    setBgColor(rgbToHex(30, 30, 46));
-    setFgColor(rgbToHex(205, 214, 244));
-    resetScreen();
+	// Initialize the video driver - Pass the first available framebuffer
+	initVideo(fbRequest.response->framebuffers[0], 8, 16);
+	setBgColor(rgbToHex(30, 30, 46));
+	setFgColor(rgbToHex(205, 214, 244));
+	resetScreen();
 
-    // Initialize the shell
-    initShell();
+	// Initialize the shell
+	initShell();
 
-    // Infinite loop
-    while(1);
+	// Loop
+	while(1);
+}
+
+// Interrupt handler
+void interruptHandler(uint64_t intNum, uint64_t errCode) {
+	// Handle CPU exceptions
+	if(intNum < 32) {
+		// Display error message and error code (If applicable) before halting the system indefinitely
+		if(errCode != 0) printf("CPU exception occurred: %s (Error code: %llu)\n", cpuExceptionMsg[intNum], errCode);
+		else printf("CPU exception occurred: %s\n", cpuExceptionMsg[intNum]);
+		halt();
+	}
+
+	// Handle IRQs (Hardware interrupts)
+	else if(intNum < 32 + IRQ_OFFSET) {
+		uint8_t irqNum = intNum - IRQ_OFFSET;
+		if(irqHandlers[irqNum] != NULL) irqHandlers[irqNum](irqNum);
+		else printf("No handler for IRQ: %d\n", irqNum);
+	}
+
+	// Invalid interrupt number
+	else printf("Invalid interrupt number %llu\n", intNum);
 }

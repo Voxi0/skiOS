@@ -1,25 +1,20 @@
-#ifndef KEYBOARD_H
-#define KEYBORAD_H
+#pragma once
 
 // Freestanding headers
-#include<stddef.h>
 #include<stdint.h>
 #include<stdbool.h>
 
 // skiOS
-#include<skiOS/drivers/pic.h>
 #include<skiOS/cpu/idt.h>
+#include<skiOS/drivers/pic.h>
+#include<skiOS/cpu/io.h>
+#include<skiOS/drivers/video.h>
 
-// Types
+// Key callback type
 typedef void (*KeyCallback)(char key, bool pressed);
 
 // Keyboard functions
 void initKb(void);
-void kbSendCmd(uint8_t cmdByte);
+void kbRegisterKeyCallback(KeyCallback handler);
+void kbDeregisterKeyCallback(void);
 void disableKb(void);
-
-// Register/Unregister a key callback function
-void kbRegisterKeyCallback(KeyCallback callback);
-void kbUnregisterKeyCallback(void);
-
-#endif

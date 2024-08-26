@@ -1,20 +1,20 @@
-#ifndef SHELL_H
-#define SHELL_H
+#pragma once
 
 // Freestanding headers
 #include<stdint.h>
+#include<stdbool.h>
 
 // skiOS
+#include<skiOS/util.h>
 #include<skiOS/drivers/keyboard.h>
 #include<skiOS/drivers/video.h>
-#include<skiOS/util.h>
 
 // Definitions
-#define MAX_PROMPT_LENGTH 50
-#define MAX_INPUT_SIZE 128
+#define MAX_INPUT_SIZE 512
+#define MAX_PROMPT_SIZE 30
 #define MAX_COMMANDS 50
 
-// Shell command handler
+// Shell command handler type
 typedef void (*cmdHandler)(int argc, char *argv[]);
 typedef struct {
     const char *name;
@@ -26,5 +26,3 @@ typedef struct {
 void initShell(void);
 void shellSetPrompt(const char *prompt);
 void shellRegisterCmd(const char *name, cmdHandler handler, const char *desc);
-
-#endif

@@ -1,5 +1,19 @@
 #include<skiOS/cpu/gdt.h>
 
+// Structures
+typedef struct {
+	uint16_t limitLow;
+	uint16_t baseLow;
+	uint8_t baseMid;
+	uint8_t access;
+	uint8_t granularity;
+	uint8_t baseHigh;
+} __attribute__((packed)) gdtEntry_t;
+typedef struct {
+	uint16_t limit;			// Pointer to the first entry in the GDT
+	uint64_t base;			// Size of the GDT - 1 entry
+} __attribute__((packed)) gdtr_t;
+
 // Enums
 typedef enum {
     GDT_ACCESS_PRESENT = 0x80,                  // Segment present in memory
@@ -38,71 +52,51 @@ typedef enum {
     GDT_FLAG_AVL_UNAVAILABLE = 0x00,    // Segment unavailable for system software use
 } GDT_FLAG;
 
-// Structures
-typedef struct {
-    uint16_t limitLow;      // Segment limit (Bits 0-15)
-    uint16_t baseLow;       // Base address (Bits 0-15)
-    uint8_t baseMid;        // Base address (Bits 16-23)
-    uint8_t access;         // Access flags - Determine what ring this segment can be used in
-    uint8_t granularity;    // Granularity and other flags
-    uint8_t baseHigh;       // Base address (Bits 24-31)
-} __attribute__((packed)) gdtEntry_t;
-typedef struct {
-    uint16_t limit;         // Size of the GDT - 1
-    uint64_t ptr;           // Pointer to the first entry in the GDT
-} __attribute__((packed)) gdtr_t;
-
-// Assembly
+// Assembly code
 extern void loadGDT(gdtr_t*);
 
-// GDT
-static gdtEntry_t gdt[6];
+// GDT and GDTR
+static gdtEntry_t gdt[5];
 static gdtr_t gdtr;
 
-// Set a GDT entry
-static void setGDTDesc(uint32_t num, uint64_t base, uint32_t limit, uint8_t access, uint8_t granularity) {
-    // Pointer to an entry in the GDT
+// Set a GDT descriptor
+static void setGDTDesc(uint8_t num, uint64_t base, uint32_t limit, uint8_t access, uint8_t granularity) {
     gdtEntry_t *entry = &gdt[num];
-
-    // Base
-    entry->baseLow = base & 0xFFFF;
-    entry->baseMid = (base >> 16) & 0xFF;
-    entry->baseHigh = (base >> 24) & 0xFF;
-
-    // Limit and flags
-    entry->limitLow = limit & 0xFFFF;
-    entry->granularity = (limit >> 16) & 0x0F;
-    entry->granularity |= (granularity & 0xF0);
-
-    // Access byte
-    entry->access = access;
+	entry->baseLow = base & 0xFFFF;
+	entry->baseMid = (base >> 16) & 0xFF;
+	entry->baseHigh = (base >> 24) & 0xFF;
+	entry->limitLow = limit & 0xFFFF;
+	entry->granularity = (limit >> 16) & 0x0F;
+	entry->granularity |= (granularity & 0xF0);
+	entry->access = access;
 }
 
 // Initialize the GDT
 void initGDT(void) {
-    // Initialize the GDT pointer
-    gdtr.ptr = (uint64_t)&gdt[0];
-    gdtr.limit = sizeof(gdt) - 1;
+	// Initialize the GDTR
+	gdtr.base = (uint64_t)&gdt[0];
+	gdtr.limit = sizeof(gdt) - 1;
 
-    // Null descriptor
-    setGDTDesc(0, 0, 0, 0, 0);
+	// Set GDT descriptors
+	// Null descriptor
+	setGDTDesc(0, 0, 0, 0, 0);
 
-    // 64-Bit kernel code/data segment
-    setGDTDesc(1, 0, 0xFFFFF,
-               GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_CODE_DATA_SEGMENT | GDT_ACCESS_SEGMENT_EXECUTABLE | GDT_ACCESS_READ_WRITE,
-               GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K);
-    setGDTDesc(2, 0, 0xFFFFF,
-               GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_CODE_DATA_SEGMENT | GDT_ACCESS_SEGMENT_NON_EXECUTABLE | GDT_ACCESS_READ_WRITE,
-               GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K);
+	// 64-Bit kernel code/data segment descriptors
+	setGDTDesc(1, 0, 0xFFFF,
+			GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_CODE_DATA_SEGMENT | GDT_ACCESS_SEGMENT_EXECUTABLE | GDT_ACCESS_READ_WRITE,
+			GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K | GDT_FLAG_AVL_UNAVAILABLE);
+	setGDTDesc(2, 0, 0xFFFF,
+			GDT_ACCESS_PRESENT | GDT_ACCESS_RING0 | GDT_ACCESS_CODE_DATA_SEGMENT | GDT_ACCESS_SEGMENT_NON_EXECUTABLE | GDT_ACCESS_READ_WRITE,
+			GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K | GDT_FLAG_AVL_UNAVAILABLE);
 
-    // 64-Bit user code/data segment
-    setGDTDesc(3, 0, 0xFFFFF,
-               GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_CODE_DATA_SEGMENT | GDT_ACCESS_SEGMENT_EXECUTABLE | GDT_ACCESS_READ_WRITE,
-               GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K);
-    setGDTDesc(4, 0, 0xFFFFF,
-               GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_CODE_DATA_SEGMENT | GDT_ACCESS_SEGMENT_NON_EXECUTABLE | GDT_ACCESS_READ_WRITE,
-               GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K);
+	// 64-Bit user code/data segment descriptors
+	setGDTDesc(3, 0, 0xFFFF,
+			GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_CODE_DATA_SEGMENT | GDT_ACCESS_SEGMENT_EXECUTABLE | GDT_ACCESS_READ_WRITE,
+			GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K | GDT_FLAG_AVL_AVAILABLE);
+	setGDTDesc(4, 0, 0xFFFF,
+			GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_CODE_DATA_SEGMENT | GDT_ACCESS_SEGMENT_NON_EXECUTABLE | GDT_ACCESS_READ_WRITE,
+			GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K | GDT_FLAG_AVL_AVAILABLE);
 
-    // Load the GDT
-    loadGDT(&gdtr);
+	// Load the GDT
+	loadGDT(&gdtr);
 }

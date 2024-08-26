@@ -1,28 +1,15 @@
 #include<skiOS/cpu/io.h>
 
-// Read/Write a byte to/from a port
+// IO functions
 uint8_t inb(uint16_t port) {
-    uint8_t result;
-    __asm__ volatile ("inb %1, %0" : "=a"(result) : "Nd"(port));
-    return result;
+	uint8_t input;
+	__asm__ volatile ( "inb %w1, %b0"
+		: "=a"(input)
+        : "Nd"(port)
+        : "memory");
+	return input;
 }
-void outb(uint16_t port, uint8_t data) {__asm__ volatile ("outb %0, %1" : : "a"(data), "Nd"(port));}
-
-// Read/Write a word (16-Bits) to/from a port
-uint16_t inw(uint16_t port) {
-    uint16_t result;
-    __asm__ volatile ("inw %1, %0" : "=a"(result) : "Nd"(port));
-    return result;
+void outb(uint16_t port, uint8_t value) {
+	__asm__ volatile ( "outb %b0, %w1" : : "a"(value), "Nd"(port) : "memory");
 }
-void outw(uint16_t port, uint16_t data) {__asm__ volatile ("outw %0, %1" : : "a"(data), "Nd"(port));}
-
-// Read/Write a double word (32-Bits) to/from a port
-uint32_t inl(uint16_t port) {
-    uint32_t result;
-    __asm__ volatile ("inl %1, %0" : "=a"(result) : "Nd"(port));
-    return result;
-}
-void outl(uint16_t port, uint32_t data) {__asm__ volatile ("outl %0, %1" : : "a"(data), "Nd"(port));}
-
-// Read an unused IO port to create a delay
-void ioWait(void) {asm volatile ("outb %%al, $0x80" : : "a"(0));}
+void ioWait(void) {outb(0x80, 0);}
