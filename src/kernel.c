@@ -14,6 +14,9 @@
 #include<skiOS/cpu/gdt.h>
 #include<skiOS/cpu/idt.h>
 
+// Memory management
+#include<skiOS/memory/paging.h>
+
 // Drivers
 #include<skiOS/drivers/video.h>
 
@@ -28,6 +31,16 @@ static volatile LIMINE_BASE_REVISION(2)
 __attribute__((used, section(".requests")))
 static volatile struct limine_framebuffer_request fbRequest = {
 	.id = LIMINE_FRAMEBUFFER_REQUEST,
+	.response = NULL,
+};
+
+__attribute__((used, section(".requests")))
+static volatile struct limine_paging_mode_request pagingModeRequest = {
+    .id = LIMINE_PAGING_MODE_REQUEST,
+    .mode = LIMINE_PAGING_MODE_X86_64_4LVL,
+    .min_mode = LIMINE_PAGING_MODE_MIN,
+    .max_mode = LIMINE_PAGING_MODE_MAX,
+    .response = NULL,
 };
 
 // Define the start and end markers for Limine requests
@@ -50,6 +63,9 @@ void kmain(void) {
 	// Initialize the Global Descriptor Table (GDT) and Interrupt Descriptor Table (IDT)
 	initGDT();
 	initIDT();
+
+	// Initialize memory management
+	initPaging(pagingModeRequest.response);
 
 	// Initialize the video driver - Pass the first available framebuffer
 	initVideo(fbRequest.response->framebuffers[0], 8, 16);

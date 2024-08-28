@@ -13,8 +13,8 @@ SRC_FILES := $(shell find $(SRC_DIR) $(FONTS_DIR) -name '*.c' -or -name '*.s' -o
 OBJ_FILES := $(SRC_FILES:%=$(BUILD_DIR)/%.o)
 
 # Compiler and linker options
-CC := x86_64-elf-gcc
-LD := x86_64-elf-ld
+CC := gcc
+LD := ld
 CFLAGS := -I $(INCLUDE_DIR) -Wall -Wextra -Werror -std=c23 -pedantic \
 		  -m64 -march=x86-64 -mno-80387 -mno-mmx -mno-red-zone \
 		  -ffreestanding -fcommon -fno-stack-protector -fno-stack-check -fPIE \

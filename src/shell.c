@@ -12,6 +12,9 @@ static shellCmd_t shellCommands[MAX_COMMANDS];
 static uint8_t shellCmdCount = 0;
 
 // Shell comand handlers
+static void cmdHelp(int, char *[]) {
+    for(int i = 0; i < shellCmdCount; i++) printf("%s - %s\n", shellCommands[i].name, shellCommands[i].desc);
+}
 static void cmdClear(int, char *[]) {resetScreen();}
 static void cmdEcho(int argc, char *argv[]) {
     for(int i = 1; i < argc; i++) printf("%s ", argv[i]);
@@ -172,6 +175,7 @@ void initShell(void) {
     kbRegisterKeyCallback(shellKeyCallback);
 
     // Register shell commands
+    shellRegisterCmd("help", cmdHelp, "Displays all the available commands and their description");
     shellRegisterCmd("clear", cmdClear, "Clear the screen");
     shellRegisterCmd("echo", cmdEcho, "Echoes input text");
     shellRegisterCmd("fgcolor", cmdSetFgColor, "Set the foreground/text color in RGB");
