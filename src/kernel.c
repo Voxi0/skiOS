@@ -15,7 +15,7 @@
 #include<skiOS/cpu/idt.h>
 
 // Memory management
-#include<skiOS/memory/paging.h>
+#include<skiOS/memory/pmm.h>
 
 // Drivers
 #include<skiOS/drivers/video.h>
@@ -28,12 +28,14 @@ __attribute__((used, section(".requests")))
 static volatile LIMINE_BASE_REVISION(2)
 
 // Limine requests
+// Framebuffer
 __attribute__((used, section(".requests")))
 static volatile struct limine_framebuffer_request fbRequest = {
 	.id = LIMINE_FRAMEBUFFER_REQUEST,
 	.response = NULL,
 };
 
+// Paging mode
 __attribute__((used, section(".requests")))
 static volatile struct limine_paging_mode_request pagingModeRequest = {
     .id = LIMINE_PAGING_MODE_REQUEST,
@@ -43,29 +45,30 @@ static volatile struct limine_paging_mode_request pagingModeRequest = {
     .response = NULL,
 };
 
+// Memory map
+__attribute__((used, section(".requests")))
+static volatile struct limine_memmap_request memoryMapRequest = {
+    .id = LIMINE_MEMMAP_REQUEST,
+    .response = NULL,
+};
+
 // Define the start and end markers for Limine requests
 __attribute__((used, section(".requests_start_marker")))
 static volatile LIMINE_REQUESTS_START_MARKER
 __attribute__((used, section(".requests_end_marker")))
 static volatile LIMINE_REQUESTS_END_MARKER
 
-// Disable system interrupts and halt system
-static void halt(void) {
-	__asm__("cli");
-	for(;;) __asm__("hlt");
-}
-
 // Main kernel function
 void kmain(void) {
 	// Ensure that the base revision is supported
-	if(LIMINE_BASE_REVISION_SUPPORTED == false) halt();
+	assert(LIMINE_BASE_REVISION_SUPPORTED);
 
 	// Initialize the Global Descriptor Table (GDT) and Interrupt Descriptor Table (IDT)
 	initGDT();
 	initIDT();
 
 	// Initialize memory management
-	initPaging(pagingModeRequest.response);
+	initPMM(memoryMapRequest.response);
 
 	// Initialize the video driver - Pass the first available framebuffer
 	initVideo(fbRequest.response->framebuffers[0], 8, 16);
@@ -98,5 +101,8 @@ void interruptHandler(uint64_t intNum, uint64_t errCode) {
 	}
 
 	// Invalid interrupt number
-	else printf("Invalid interrupt number %llu\n", intNum);
+	else {
+		printf("Invalid interrupt number %llu\n", intNum);
+		halt();
+	}
 }

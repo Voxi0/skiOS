@@ -33,6 +33,15 @@ int memcmp(const void *s1, const void *s2, size_t n) {
     return 0;
 }
 
+// Disable system interrupts and halt system
+void halt(void) {
+	__asm__("cli");
+	for(;;) __asm__("hlt");
+}
+
+// Assert function - Disables system interrupts if the condition passed to it isn't met
+void assert(bool expression) {if(expression != true) halt();}
+
 // Get the minimum/maximum value of two values
 int min(int a, int b) {return a < b ? a : b;}
 int max(int a, int b) {return a > b ? a : b;}

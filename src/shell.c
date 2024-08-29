@@ -154,7 +154,7 @@ static void shellKeyCallback(char key, bool pressed) {
         case '\b':
             if(pressed && inputIndex > 0) {
                 inputIndex--;
-                printf("\b \b");
+                printf("\b");
             }
             break;
         

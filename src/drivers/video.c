@@ -29,11 +29,7 @@ static void cmdFbInfo(int, char *[]) {
 void initVideo(struct limine_framebuffer *framebuffer, const uint8_t fontWidth, const uint8_t fontHeight) {
 	// Store and ensure that we have the framebuffer
 	fb = framebuffer;
-	if(fb == NULL) {
-		// Disable system interrupts and halt system
-		__asm__("cli");
-		for(;;) __asm__("hlt");
-	}
+	assert(fb != NULL);
 
 	// Store font dimensions
 	glyphWidth = fontWidth;

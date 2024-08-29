@@ -5,6 +5,7 @@
 #include<stdint.h>
 
 // skiOS
+#include<skiOS/util.h>
 #include<skiOS/drivers/pic.h>
 
 // Definitions

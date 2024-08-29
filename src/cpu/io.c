@@ -3,7 +3,7 @@
 // IO functions
 uint8_t inb(uint16_t port) {
 	uint8_t input;
-	__asm__ volatile ( "inb %w1, %b0"
+	__asm__ volatile ("inb %w1, %b0"
 		: "=a"(input)
         : "Nd"(port)
         : "memory");

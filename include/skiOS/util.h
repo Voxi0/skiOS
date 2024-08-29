@@ -3,6 +3,7 @@
 // Freestanding headers
 #include<stddef.h>
 #include<stdint.h>
+#include<stdbool.h>
 
 #include<skiOS/util.h>
 
@@ -13,6 +14,12 @@ void *memcpy(void *dst, const void *src, size_t n);
 void *memset(void *s, int c, size_t n);
 void *memmove(void *dst, const void *src, size_t n);
 int memcmp(const void *s1, const void *s2, size_t n);
+
+// Assert function - Disables system interrupts if the condition passed to it isn't met
+void assert(bool expression);
+
+// Disable system interrupts and halt system
+void halt(void);
 
 // Get the minimum/maximum value of two values
 int min(int a, int b);

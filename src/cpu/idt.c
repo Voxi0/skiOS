@@ -114,16 +114,10 @@ void initIDT(void) {
 
 // Register/Deregister an IRQ (Hardware interrupt) handler
 void irqRegisterHandler(uint8_t irqNum, irqHandler handler) {
-	if(irqNum < 16) irqHandlers[irqNum] = handler;
-	else {
-		__asm__("cli");
-		for(;;) __asm__("hlt");
-	}
+	assert(irqNum < 16);
+	irqHandlers[irqNum] = handler;
 }
 void irqDeregisterHandler(uint8_t irqNum) {
-	if(irqNum < 16) irqHandlers[irqNum] = NULL;
-	else {
-		__asm__("cli");
-		for(;;) __asm__("hlt");
-	}
+	assert(irqNum < 16);
+	irqHandlers[irqNum] = NULL;
 }
