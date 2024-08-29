@@ -44,7 +44,7 @@ void initVideo(struct limine_framebuffer *framebuffer, const uint8_t fontWidth, 
 	ssfn_dst.x = ssfn_dst.y = 0;
 
 	// Register shell commands
-	shellRegisterCmd("fbInfo", cmdFbInfo, "Display information about the framebuffer");
+	shellRegisterCmd("fbinfo", cmdFbInfo, "Display information about the framebuffer");
 }
 
 // Reset the screen - Reset cursor position and clear screen with background color
